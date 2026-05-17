@@ -1,0 +1,13 @@
+{
+  "regions": ["sin1"],
+  "crons": [
+    {
+      "path": "/api/resolve-round",
+      "schedule": "30 18 * * *"
+    },
+    {
+      "path": "/api/resolve-seeds",
+      "schedule": "0 1 * * 6"
+    }
+  ]
+}

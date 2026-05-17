@@ -1,0 +1,263 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String?   @unique
+  name          String?
+  image         String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  role          String    @default("user")
+
+  submissions       Submission[]
+  votes             Vote[]
+  segments          Segment[]
+  premises          Premise[]
+  premiseVotes      PremiseVote[]
+  comments          Comment[]
+  commentVotes      CommentVote[]
+  bookmarks         Bookmark[]
+  stars             Star[]
+  moderationActions ModerationLog[] @relation("ModerationActor")
+  accounts          Account[]
+  sessions          Session[]
+}
+
+model Story {
+  id              String   @id @default(cuid())
+  title           String
+  premise         String   @db.Text
+  createdAt       DateTime @default(now())
+  status          String   @default("active")
+  maxSegments     Int      @default(50)
+  submissionCount Int      @default(0)
+  wordCount       Int      @default(0)
+
+  segments  Segment[]
+  rounds    Round[]
+  bookmarks Bookmark[]
+}
+
+model Segment {
+  id            String   @id @default(cuid())
+  storyId       String
+  roundNumber   Int
+  content       String   @db.Text
+  contributedBy String
+  createdAt     DateTime @default(now())
+
+  story       Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  contributor User  @relation(fields: [contributedBy], references: [id], onDelete: Cascade)
+
+  @@index([storyId, roundNumber])
+}
+
+model Round {
+  id                   String    @id @default(cuid())
+  storyId              String
+  roundNumber          Int
+  startsAt             DateTime
+  endsAt               DateTime
+  status               String    @default("open")
+  winningSubmissionId  String?
+  overtimeTriggered    Boolean   @default(false)
+  overtimeChallengerId String?
+  originalEndsAt       DateTime?
+
+  story              Story        @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  submissions        Submission[]
+  winner             Submission?  @relation("WinningSubmission", fields: [winningSubmissionId], references: [id], onDelete: SetNull)
+  overtimeChallenger Submission?  @relation("OvertimeChallenger", fields: [overtimeChallengerId], references: [id], onDelete: SetNull)
+
+  @@unique([storyId, roundNumber])
+  @@index([status, endsAt])
+}
+
+model Submission {
+  id        String   @id @default(cuid())
+  roundId   String
+  userId    String
+  content   String   @db.Text
+  wordCount Int
+  endsStory Boolean  @default(false)
+  createdAt DateTime @default(now())
+  upvotes   Int      @default(0)
+  downvotes Int      @default(0)
+  netScore  Int      @default(0)
+
+  round             Round   @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes             Vote[]
+  winningForRounds  Round[] @relation("WinningSubmission")
+  overtimeForRounds Round[] @relation("OvertimeChallenger")
+
+  @@unique([roundId, userId])
+  @@index([roundId, netScore])
+  @@index([roundId, createdAt])
+}
+
+model Vote {
+  id           String   @id @default(cuid())
+  submissionId String
+  userId       String
+  value        Int
+  createdAt    DateTime @default(now())
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, userId])
+}
+
+model Premise {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  content   String   @db.Text
+  wordCount Int
+  createdAt DateTime @default(now())
+  status    String   @default("voting")
+  upvotes   Int      @default(0)
+  downvotes Int      @default(0)
+  netScore  Int      @default(0)
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  premiseVotes PremiseVote[]
+
+  @@index([status, netScore])
+}
+
+model PremiseVote {
+  id        String   @id @default(cuid())
+  premiseId String
+  userId    String
+  value     Int
+  createdAt DateTime @default(now())
+
+  premise Premise @relation(fields: [premiseId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([premiseId, userId])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  parentType String
+  parentId   String
+  userId     String
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+  replyToId  String?
+  upvotes    Int      @default(0)
+  downvotes  Int      @default(0)
+  netScore   Int      @default(0)
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replyTo      Comment?      @relation("CommentReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies      Comment[]     @relation("CommentReplies")
+  commentVotes CommentVote[]
+
+  @@index([parentType, parentId])
+  @@index([replyToId])
+}
+
+model CommentVote {
+  id        String   @id @default(cuid())
+  commentId String
+  userId    String
+  value     Int
+  createdAt DateTime @default(now())
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+}
+
+model ModerationLog {
+  id          String   @id @default(cuid())
+  adminUserId String
+  action      String
+  targetType  String
+  targetId    String
+  reason      String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  admin User @relation("ModerationActor", fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId, createdAt])
+  @@index([targetType, targetId, createdAt])
+  @@index([createdAt])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  storyId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storyId])
+  @@index([userId, createdAt])
+}
+
+model Star {
+  id         String   @id @default(cuid())
+  userId     String
+  targetType String   // "comment" or "premise"
+  targetId   String
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetType, targetId])
+  @@index([userId, targetType, createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

@@ -1,0 +1,24 @@
+ALTER TABLE "Story"
+ADD COLUMN "starCount" INTEGER NOT NULL DEFAULT 0;
+
+CREATE TABLE "Star" (
+  "id" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  "storyId" TEXT NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT "Star_pkey" PRIMARY KEY ("id")
+);
+
+CREATE UNIQUE INDEX "Star_userId_storyId_key" ON "Star"("userId", "storyId");
+CREATE INDEX "Star_storyId_idx" ON "Star"("storyId");
+
+ALTER TABLE "Star"
+ADD CONSTRAINT "Star_userId_fkey"
+FOREIGN KEY ("userId") REFERENCES "User"("id")
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE "Star"
+ADD CONSTRAINT "Star_storyId_fkey"
+FOREIGN KEY ("storyId") REFERENCES "Story"("id")
+ON DELETE CASCADE ON UPDATE CASCADE;
