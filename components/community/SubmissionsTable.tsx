@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { signIn, useSession } from "next-auth/react";
+import Link from "next/link";
+import { signIn } from "next-auth/react";
 import type { SubmissionRow } from "@/components/community/CommunityClient";
 import CommentThread from "@/components/comments/CommentThread";
+import ReportButton from "@/components/moderation/ReportButton";
 
 type SafeMutate = (
   updater: SubmissionRow[] | ((current: SubmissionRow[]) => SubmissionRow[]),
@@ -11,7 +13,6 @@ type SafeMutate = (
 ) => Promise<SubmissionRow[] | undefined>;
 
 type SubmissionsTableProps = {
-  storyId: string;
   submissions: SubmissionRow[];
   safeMutate: SafeMutate;
   canVote: boolean;
@@ -19,13 +20,11 @@ type SubmissionsTableProps = {
 };
 
 export default function SubmissionsTable({
-  storyId,
   submissions,
   safeMutate,
   canVote,
   loading,
 }: SubmissionsTableProps) {
-  const { data: session } = useSession();
   const [votingIds, setVotingIds] = useState<Set<string>>(new Set());
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
 
@@ -145,7 +144,13 @@ export default function SubmissionsTable({
             <div className="min-w-0 flex-1">
               <p className="whitespace-pre-line text-sm leading-6">{sub.content}</p>
               <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
-                <span>@{sub.user.username ?? "anonymous"}</span>
+                {sub.user.username ? (
+                  <Link href={`/profile/${sub.user.username}`} className="hover:underline">
+                    @{sub.user.username}
+                  </Link>
+                ) : (
+                  <span>@anonymous</span>
+                )}
                 <span>{sub.wordCount} words</span>
                 <span>{sub.upvotes}↑ {sub.downvotes}↓</span>
                 {sub.endsStory && (
@@ -158,6 +163,7 @@ export default function SubmissionsTable({
                 >
                   {sub.commentsCount} comments {expandedComments.has(sub.id) ? "▾" : "▸"}
                 </button>
+                <ReportButton targetType="submission" targetId={sub.id} />
               </div>
             </div>
           </div>

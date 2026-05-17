@@ -195,9 +195,6 @@ export async function POST(request: Request) {
   }
 
   if (body.action === "set_user_role") {
-    const admin = await requireAdminUser();
-    if ("error" in admin) return admin.error;
-
     const userId = body.userId?.trim();
     const email = body.email?.trim().toLowerCase();
     const role = body.role;
@@ -205,6 +202,15 @@ export async function POST(request: Request) {
     if (!isManageableUserRole(role)) {
       return NextResponse.json({ error: "Invalid role" }, { status: 400 });
     }
+
+    // Moderators can ban users; other role changes require admin
+    if (role === "banned") {
+      // moderator already verified at the top of POST
+    } else {
+      const admin = await requireAdminUser();
+      if ("error" in admin) return admin.error;
+    }
+
     if (!userId && !email) {
       return NextResponse.json({ error: "userId or email is required" }, { status: 400 });
     }
@@ -217,10 +223,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Prevent banning admins/moderators unless you are admin
+    if (role === "banned" && (targetUser.role === "admin" || targetUser.role === "moderator")) {
+      const admin = await requireAdminUser();
+      if ("error" in admin) return admin.error;
+    }
+
     await prisma.user.update({ where: { id: targetUser.id }, data: { role } });
 
     await logModerationAction({
-      adminUserId: admin.userId,
+      adminUserId: moderator.userId,
       action: "set_user_role",
       targetType: "user",
       targetId: targetUser.id,

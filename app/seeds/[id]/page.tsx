@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import StarToggleButton from "@/components/actions/StarToggleButton";
 import CommentThread from "@/components/comments/CommentThread";
 import PremiseVotePanel from "@/components/premises/PremiseVotePanel";
+import ReportButton from "@/components/moderation/ReportButton";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -117,16 +119,26 @@ export default async function SeedDetailPage({ params }: SeedDetailPageProps) {
           <div className="flex-1 space-y-3">
             <div className="flex items-start justify-between gap-4">
               <h1 className="text-2xl font-bold">{premise.title}</h1>
-              <StarToggleButton
-                targetType="premise"
-                targetId={premise.id}
-                initiallyStarred={Boolean(premiseStar)}
-                className="border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
-              />
+              <div className="flex items-center gap-2">
+                <ReportButton targetType="premise" targetId={premise.id} />
+                <StarToggleButton
+                  targetType="premise"
+                  targetId={premise.id}
+                  initiallyStarred={Boolean(premiseStar)}
+                  className="border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
+                />
+              </div>
             </div>
             <p className="whitespace-pre-line leading-7">{premise.content}</p>
             <p className="text-xs text-gray-500">
-              @{premise.username ?? "anonymous"} · {premise.wordCount} words
+              {premise.username ? (
+                <Link href={`/profile/${premise.username}`} className="hover:underline">
+                  @{premise.username}
+                </Link>
+              ) : (
+                <span>@anonymous</span>
+              )}
+              {" · "}{premise.wordCount} words
             </p>
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
 import SubmissionForm from "@/components/community/SubmissionForm";
@@ -79,9 +79,10 @@ export default function CommunityClient({
     },
   );
 
-  const submissions = rawData ?? [];
-  // Keep ref in sync
-  submissionsRef.current = submissions;
+  const submissions = useMemo(() => rawData ?? [], [rawData]);
+  useEffect(() => {
+    submissionsRef.current = submissions;
+  }, [submissions]);
 
   // Wrapped mutate that falls back to ref when SWR cache is empty
   const safeMutate = useCallback(
@@ -141,7 +142,6 @@ export default function CommunityClient({
 
       {/* Submissions list */}
       <SubmissionsTable
-        storyId={story.id}
         submissions={submissions}
         safeMutate={safeMutate}
         canVote={canVote}

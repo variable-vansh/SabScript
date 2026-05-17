@@ -28,6 +28,7 @@ model User {
   bookmarks         Bookmark[]
   stars             Star[]
   moderationActions ModerationLog[] @relation("ModerationActor")
+  reports           Report[]        @relation("ReportsCreated")
   accounts          Account[]
   sessions          Session[]
 }
@@ -260,4 +261,19 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  reporterId String
+  targetType String   // "submission" | "comment" | "premise" | "profile"
+  targetId   String
+  reason     String
+  createdAt  DateTime @default(now())
+
+  reporter User @relation("ReportsCreated", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@unique([reporterId, targetType, targetId])
+  @@index([targetType, targetId])
+  @@index([createdAt])
 }

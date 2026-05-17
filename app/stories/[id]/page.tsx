@@ -135,7 +135,14 @@ export default async function StoryDetailPage({ params }: StoryPageProps) {
           <section key={segment.id} className="space-y-2">
             <p className="whitespace-pre-line leading-7">{segment.content}</p>
             <p className="text-xs text-gray-400">
-              @{segment.contributor.username ?? "anonymous"} · Round {segment.roundNumber}
+              {segment.contributor.username ? (
+                <Link href={`/profile/${segment.contributor.username}`} className="hover:underline">
+                  @{segment.contributor.username}
+                </Link>
+              ) : (
+                <span>@anonymous</span>
+              )}{" "}
+              · Round {segment.roundNumber}
             </p>
             {idx < story.segments.length - 1 && <hr className="border-gray-200" />}
           </section>

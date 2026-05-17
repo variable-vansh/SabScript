@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import StarToggleButton from "@/components/actions/StarToggleButton";
 import CommentForm from "@/components/comments/CommentForm";
 import ModerationActionButton from "@/components/moderation/ModerationActionButton";
+import ReportButton from "@/components/moderation/ReportButton";
 import { fetcher } from "@/lib/fetcher";
 import { canAccessModeration } from "@/lib/roles";
 
@@ -132,8 +134,11 @@ export default function CommentThread({
     revalidateOnFocus: false,
   });
 
-  const comments = rawData ?? [];
-  commentsRef.current = comments;
+  const comments = useMemo(() => rawData ?? [], [rawData]);
+
+  useEffect(() => {
+    commentsRef.current = comments;
+  }, [comments]);
 
   // Safe mutate that always has data
   const safeMutate = useCallback(
@@ -304,7 +309,13 @@ export default function CommentThread({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 text-xs text-gray-500">
-              <span className="font-medium text-gray-700">{comment.user.username ?? "anonymous"}</span>
+              {comment.user.username ? (
+                <Link href={`/profile/${comment.user.username}`} className="font-medium text-gray-700 hover:underline">
+                  @{comment.user.username}
+                </Link>
+              ) : (
+                <span className="font-medium text-gray-700">anonymous</span>
+              )}
               <span>{relativeTime(comment.createdAt)}</span>
             </div>
             <p className="mt-1 whitespace-pre-wrap text-sm leading-6">{comment.content}</p>
@@ -321,6 +332,7 @@ export default function CommentThread({
                 targetId={comment.id}
                 initiallyStarred={comment.starredByMe}
               />
+              <ReportButton targetType="comment" targetId={comment.id} />
               {canModerate && (
                 <ModerationActionButton
                   action="remove_comment"

@@ -64,6 +64,36 @@ export const StarToggleSchema = z.object({
 });
 export type StarToggleInput = z.infer<typeof StarToggleSchema>;
 
+// ── Reports ─────────────────────────────────────────────────────────
+export const REPORT_REASONS = [
+  "spam",
+  "harassment",
+  "hate_speech",
+  "misinformation",
+  "inappropriate_content",
+  "plagiarism",
+  "other",
+] as const;
+
+export type ReportReason = (typeof REPORT_REASONS)[number];
+
+export const REPORT_REASON_LABELS: Record<ReportReason, string> = {
+  spam: "Spam",
+  harassment: "Harassment",
+  hate_speech: "Hate speech",
+  misinformation: "Misinformation",
+  inappropriate_content: "Inappropriate content",
+  plagiarism: "Plagiarism",
+  other: "Other",
+};
+
+export const ReportCreateSchema = z.object({
+  targetType: z.enum(["submission", "comment", "premise", "profile"]),
+  targetId: z.string().min(1),
+  reason: z.enum(REPORT_REASONS),
+});
+export type ReportCreateInput = z.infer<typeof ReportCreateSchema>;
+
 // ── Moderation ──────────────────────────────────────────────────────
 export const ModerationRemoveCommentSchema = z.object({
   action: z.literal("remove_comment"),
