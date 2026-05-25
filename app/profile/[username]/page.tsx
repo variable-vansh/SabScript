@@ -101,7 +101,7 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
       <header className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold">@{user.username}</h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Joined {new Date(user.createdAt).toLocaleDateString()}
           </p>
           {user.role === "banned" && (
@@ -114,7 +114,7 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
       </header>
 
       {/* Stats */}
-      <div className="flex gap-6 text-sm text-gray-500">
+      <div className="flex gap-6 text-sm text-gray-500 dark:text-gray-400">
         <span>{user.submissions.length} submissions</span>
         <span>{user.premises.length} seeds</span>
         <span>{user.comments.length} comments</span>
@@ -122,13 +122,13 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
 
       {/* Submissions */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500">
+        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">
           Submissions ({user.submissions.length})
         </h2>
         {user.submissions.length === 0 ? (
-          <p className="text-sm text-gray-400">No submissions yet.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">No submissions yet.</p>
         ) : (
-          <ul className="divide-y divide-gray-200 border border-gray-200">
+          <ul className="divide-y divide-gray-200 dark:divide-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
             {user.submissions.map((sub) => (
               <li key={sub.id} className="px-4 py-3">
                 <div className="flex items-start justify-between gap-3">
@@ -139,7 +139,7 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
                     >
                       {sub.round.story.title}
                     </Link>
-                    <p className="mt-1 text-sm text-gray-600">{snippet(sub.content)}</p>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{snippet(sub.content)}</p>
                     <div className="mt-1 text-xs text-gray-400">
                       {sub.netScore} votes ·{" "}
                       {sub.round.winningSubmissionId === sub.id ? "Won" : "Lost"}
@@ -155,13 +155,13 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
 
       {/* Seeds */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500">
+        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">
           Seeds ({user.premises.length})
         </h2>
         {user.premises.length === 0 ? (
-          <p className="text-sm text-gray-400">No seeds yet.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">No seeds yet.</p>
         ) : (
-          <ul className="divide-y divide-gray-200 border border-gray-200">
+          <ul className="divide-y divide-gray-200 dark:divide-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
             {user.premises.map((seed) => (
               <li key={seed.id} className="px-4 py-3">
                 <div className="flex items-start justify-between gap-3">
@@ -186,13 +186,13 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
 
       {/* Comments */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500">
+        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">
           Comments ({user.comments.length})
         </h2>
         {user.comments.length === 0 ? (
-          <p className="text-sm text-gray-400">No comments yet.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">No comments yet.</p>
         ) : (
-          <ul className="divide-y divide-gray-200 border border-gray-200">
+          <ul className="divide-y divide-gray-200 dark:divide-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
             {user.comments.map((comment) => {
               const submissionStory = submissionCommentParentMap.get(comment.parentId);
               const href = comment.parentType === "premise"
@@ -209,7 +209,7 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
                 <li key={comment.id} className="px-4 py-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm text-gray-600">{snippet(comment.content)}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{snippet(comment.content)}</p>
                       <div className="mt-1 text-xs text-gray-400">
                         {href ? (
                           <Link href={href} className="hover:underline">

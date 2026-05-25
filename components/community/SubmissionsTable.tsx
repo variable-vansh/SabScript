@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import type { SubmissionRow } from "@/components/community/CommunityClient";
-import CommentThread from "@/components/comments/CommentThread";
 import ReportButton from "@/components/moderation/ReportButton";
 
 type SafeMutate = (
@@ -19,6 +18,25 @@ type SubmissionsTableProps = {
   loading: boolean;
 };
 
+type SortMode = "top" | "new" | "rising";
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function truncateWords(text: string, maxWords: number): { truncated: string; isTruncated: boolean } {
+  const words = text.split(/\s+/);
+  if (words.length <= maxWords) return { truncated: text, isTruncated: false };
+  return { truncated: words.slice(0, maxWords).join(" ") + "…", isTruncated: true };
+}
+
 export default function SubmissionsTable({
   submissions,
   safeMutate,
@@ -26,16 +44,38 @@ export default function SubmissionsTable({
   loading,
 }: SubmissionsTableProps) {
   const [votingIds, setVotingIds] = useState<Set<string>>(new Set());
-  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [sortMode, setSortMode] = useState<SortMode>("top");
 
-  function toggleComments(submissionId: string) {
-    setExpandedComments((prev) => {
+  function toggleExpand(id: string) {
+    setExpandedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(submissionId)) next.delete(submissionId);
-      else next.add(submissionId);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }
+
+  const sortedSubmissions = useMemo(() => {
+    const copy = [...submissions];
+    switch (sortMode) {
+      case "top":
+        return copy.sort((a, b) => b.netScore - a.netScore);
+      case "new":
+        return copy.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      case "rising": {
+        // Rising = highest score relative to recency
+        const now = Date.now();
+        return copy.sort((a, b) => {
+          const ageA = Math.max(1, (now - new Date(a.createdAt).getTime()) / 3600000);
+          const ageB = Math.max(1, (now - new Date(b.createdAt).getTime()) / 3600000);
+          return (b.netScore / ageB) - (a.netScore / ageA);
+        });
+      }
+      default:
+        return copy;
+    }
+  }, [submissions, sortMode]);
 
   async function handleVote(submissionId: string, value: 1 | -1) {
     if (votingIds.has(submissionId)) return;
@@ -111,76 +151,98 @@ export default function SubmissionsTable({
     }
   }
 
-  if (loading) return <p className="text-sm text-gray-500">Loading submissions...</p>;
-  if (submissions.length === 0) return <p className="text-sm text-gray-500">No submissions yet.</p>;
+  if (loading) return <p className="text-sm text-gray-500 dark:text-gray-400">Loading submissions...</p>;
+  if (submissions.length === 0) return <p className="text-sm text-gray-500 dark:text-gray-400">No submissions yet.</p>;
+
+  const sortOptions: { key: SortMode; label: string }[] = [
+    { key: "top", label: "Top" },
+    { key: "new", label: "New" },
+    { key: "rising", label: "Rising" },
+  ];
 
   return (
     <div className="space-y-3">
-      {submissions.map((sub) => (
-        <div key={sub.id} className="border border-gray-200">
-          <div className="flex items-start gap-4 p-4">
-            {/* Vote controls */}
-            <div className="flex flex-col items-center gap-1 text-xs">
-              <button
-                type="button"
-                disabled={!canVote || votingIds.has(sub.id)}
-                onClick={() => void handleVote(sub.id, 1)}
-                className={`px-1 ${sub.currentUserVote === 1 ? "font-bold text-green-600" : "text-gray-400 hover:text-gray-600"}`}
-              >
-                ▲
-              </button>
-              <span className="font-medium">{sub.netScore}</span>
-              <button
-                type="button"
-                disabled={!canVote || votingIds.has(sub.id)}
-                onClick={() => void handleVote(sub.id, -1)}
-                className={`px-1 ${sub.currentUserVote === -1 ? "font-bold text-red-600" : "text-gray-400 hover:text-gray-600"}`}
-              >
-                ▼
-              </button>
-            </div>
+      {/* Sort toggle */}
+      <div className="flex items-center gap-1">
+        {sortOptions.map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setSortMode(key)}
+            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              sortMode === key
+                ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900"
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-            {/* Content */}
-            <div className="min-w-0 flex-1">
-              <p className="whitespace-pre-line text-sm leading-6">{sub.content}</p>
-              <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
-                {sub.user.username ? (
-                  <Link href={`/profile/${sub.user.username}`} className="hover:underline">
-                    @{sub.user.username}
-                  </Link>
-                ) : (
-                  <span>@anonymous</span>
-                )}
-                <span>{sub.wordCount} words</span>
-                <span>{sub.upvotes}↑ {sub.downvotes}↓</span>
-                {sub.endsStory && (
-                  <span className="font-medium text-orange-600">Ends story</span>
-                )}
+      {/* Submission cards */}
+      {sortedSubmissions.map((sub) => {
+        const isExpanded = expandedIds.has(sub.id);
+        const { truncated, isTruncated } = truncateWords(sub.content, 75);
+
+        return (
+          <div key={sub.id} className="rounded-lg border border-gray-200 dark:border-gray-800">
+            <div className="flex items-start gap-3 p-4">
+              {/* Vote controls */}
+              <div className="flex flex-col items-center gap-1 text-xs shrink-0">
                 <button
                   type="button"
-                  onClick={() => toggleComments(sub.id)}
-                  className="hover:underline"
+                  disabled={!canVote || votingIds.has(sub.id)}
+                  onClick={() => void handleVote(sub.id, 1)}
+                  className={`px-1 ${sub.currentUserVote === 1 ? "font-bold text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}
                 >
-                  {sub.commentsCount} comments {expandedComments.has(sub.id) ? "▾" : "▸"}
+                  ▲
                 </button>
-                <ReportButton targetType="submission" targetId={sub.id} />
+                <span className="font-medium">{sub.netScore}</span>
+                <button
+                  type="button"
+                  disabled={!canVote || votingIds.has(sub.id)}
+                  onClick={() => void handleVote(sub.id, -1)}
+                  className={`px-1 ${sub.currentUserVote === -1 ? "font-bold text-red-600 dark:text-red-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}
+                >
+                  ▼
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="min-w-0 flex-1">
+                <p className="whitespace-pre-line text-sm leading-6">
+                  {isExpanded ? sub.content : truncated}
+                </p>
+                {isTruncated && (
+                  <button
+                    type="button"
+                    onClick={() => toggleExpand(sub.id)}
+                    className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    {isExpanded ? "Show less" : "Read more"}
+                  </button>
+                )}
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                  {sub.user.username ? (
+                    <Link href={`/profile/${sub.user.username}`} className="hover:underline">
+                      @{sub.user.username}
+                    </Link>
+                  ) : (
+                    <span>@anonymous</span>
+                  )}
+                  <span>{timeAgo(sub.createdAt)}</span>
+                  <span>{sub.upvotes}↑ {sub.downvotes}↓</span>
+                  {sub.endsStory && (
+                    <span className="font-medium text-orange-600 dark:text-orange-400">Ends story</span>
+                  )}
+                  <ReportButton targetType="submission" targetId={sub.id} />
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Inline comments */}
-          {expandedComments.has(sub.id) && (
-            <div className="border-t border-gray-200 bg-gray-50 p-4">
-              <CommentThread
-                parentType="submission"
-                parentId={sub.id}
-                initialComments={[]}
-                fetchOnMount
-              />
-            </div>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

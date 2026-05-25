@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
+import RoundTimer from "@/components/community/RoundTimer";
 import SubmissionForm from "@/components/community/SubmissionForm";
 import SubmissionsTable from "@/components/community/SubmissionsTable";
 import { fetcher } from "@/lib/fetcher";
@@ -115,40 +116,13 @@ export default function CommunityClient({
     Boolean(activeRound && ["open", "overtime"].includes(activeRound.status));
 
   return (
-    <div className="space-y-6">
-      {/* Round selector */}
-      <div className="flex items-center gap-3">
-        <label htmlFor="round-select" className="text-sm font-medium">
-          Round:
-        </label>
-        <select
-          id="round-select"
-          value={selectedRoundId ?? ""}
-          onChange={(e) => setSelectedRoundId(e.target.value || null)}
-          className="border border-gray-300 px-2 py-1 text-sm"
-        >
-          {roundOptions.map((r) => (
-            <option key={r.id} value={r.id}>
-              Round {r.roundNumber} ({r.status})
-            </option>
-          ))}
-        </select>
-        {selectedRound && ["open", "overtime"].includes(selectedRound.status) && (
-          <span className="text-xs text-gray-500">
-            Ends: {new Date(selectedRound.endsAt).toLocaleString()}
-          </span>
-        )}
-      </div>
+    <div className="space-y-5">
+      {/* Timer */}
+      {activeRound && ["open", "overtime"].includes(activeRound.status) && (
+        <RoundTimer endsAt={activeRound.endsAt} />
+      )}
 
-      {/* Submissions list */}
-      <SubmissionsTable
-        submissions={submissions}
-        safeMutate={safeMutate}
-        canVote={canVote}
-        loading={isLoading}
-      />
-
-      {/* Submission form */}
+      {/* Submission form (above submissions list) */}
       {selectedRoundId === activeRoundId && (
         <SubmissionForm
           roundId={activeRoundId}
@@ -176,6 +150,38 @@ export default function CommunityClient({
           }}
         />
       )}
+
+      {/* Round selector */}
+      <div className="flex items-center gap-3">
+        <label htmlFor="round-select" className="text-sm font-medium">
+          Round:
+        </label>
+        <select
+          id="round-select"
+          value={selectedRoundId ?? ""}
+          onChange={(e) => setSelectedRoundId(e.target.value || null)}
+          className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-1 text-sm"
+        >
+          {roundOptions.map((r) => (
+            <option key={r.id} value={r.id}>
+              Round {r.roundNumber} ({r.status})
+            </option>
+          ))}
+        </select>
+        {selectedRound && ["open", "overtime"].includes(selectedRound.status) && (
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            Ends: {new Date(selectedRound.endsAt).toLocaleString()}
+          </span>
+        )}
+      </div>
+
+      {/* Submissions list */}
+      <SubmissionsTable
+        submissions={submissions}
+        safeMutate={safeMutate}
+        canVote={canVote}
+        loading={isLoading}
+      />
     </div>
   );
 }

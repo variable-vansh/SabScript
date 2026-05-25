@@ -67,7 +67,7 @@ export default function CommentForm({
         onChange={(e) => setContent(e.target.value)}
         placeholder={placeholder}
         rows={compact ? 2 : 3}
-        className="w-full border border-gray-300 p-2 text-sm"
+        className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-2 text-sm placeholder-gray-400 dark:placeholder-gray-500"
       />
       <div className="flex items-center justify-between">
         <span className="text-xs text-gray-400">{content.length}/1000</span>
@@ -75,12 +75,12 @@ export default function CommentForm({
           type="button"
           onClick={() => void handleSubmit()}
           disabled={!content.trim() || submitting}
-          className="border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-50"
+          className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
         >
           {submitting ? "Posting..." : submitLabel}
         </button>
       </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
     </div>
   );
 }

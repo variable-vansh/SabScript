@@ -21,7 +21,7 @@ export async function GET(_request: Request, context: RouteContext) {
   });
 
   if (maybeCurrentRound && maybeCurrentRound.endsAt <= now) {
-    await resolveExpiredRounds(now);
+    await resolveExpiredRounds(now, { storyId: id });
   }
 
   const story = await prisma.story.findUnique({

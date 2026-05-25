@@ -187,13 +187,34 @@ export default function CommentThread({
     return map;
   }, [comments, commentsById]);
 
-  function sortList(list: CommentRow[]) {
-    return [...list].sort((a, b) => {
-      if (sortMode === "top") return b.netScore - a.netScore || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      if (sortMode === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-  }
+  const createdAtMsById = useMemo(
+    () => new Map(comments.map((c) => [c.id, new Date(c.createdAt).getTime()])),
+    [comments],
+  );
+
+  const compareComments = useCallback((a: CommentRow, b: CommentRow) => {
+    const aTs = createdAtMsById.get(a.id) ?? 0;
+    const bTs = createdAtMsById.get(b.id) ?? 0;
+
+    if (sortMode === "top") return b.netScore - a.netScore || bTs - aTs;
+    if (sortMode === "oldest") return aTs - bTs;
+    return bTs - aTs;
+  }, [createdAtMsById, sortMode]);
+
+  const sortedChildrenByParent = useMemo(() => {
+    const map = new Map<string | null, CommentRow[]>();
+    for (const [key, list] of childrenByParent.entries()) {
+      map.set(key, [...list].sort(compareComments));
+    }
+    return map;
+  }, [childrenByParent, compareComments]);
+
+  const roots = useMemo(
+    () => comments
+      .filter((c) => !c.replyToId || !commentsById.has(c.replyToId))
+      .sort(compareComments),
+    [comments, commentsById, compareComments],
+  );
 
   function removeCommentTree(commentId: string) {
     void safeMutate(
@@ -282,18 +303,18 @@ export default function CommentThread({
   }
 
   function renderNode(comment: CommentRow, depth: number): React.ReactNode {
-    const children = sortList(childrenByParent.get(comment.id) ?? []);
+    const children = sortedChildrenByParent.get(comment.id) ?? [];
     const indent = Math.min(depth, 3);
 
     return (
-      <div key={comment.id} className={`border border-gray-200 p-3 ${indent > 0 ? "ml-6" : ""}`}>
+      <div key={comment.id} className={`rounded-lg border border-gray-200 dark:border-gray-800 p-3 ${indent > 0 ? "ml-6" : ""}`}>
         <div className="flex items-start gap-3">
           <div className="flex flex-col items-center gap-0.5 text-xs">
             <button
               type="button"
               disabled={!canVote || votingIds.has(comment.id)}
               onClick={() => void voteComment(comment.id, 1)}
-              className={comment.currentUserVote === 1 ? "font-bold text-green-600" : "text-gray-400"}
+              className={comment.currentUserVote === 1 ? "font-bold text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"}
             >
               ▲
             </button>
@@ -302,19 +323,19 @@ export default function CommentThread({
               type="button"
               disabled={!canVote || votingIds.has(comment.id)}
               onClick={() => void voteComment(comment.id, -1)}
-              className={comment.currentUserVote === -1 ? "font-bold text-red-600" : "text-gray-400"}
+              className={comment.currentUserVote === -1 ? "font-bold text-red-600 dark:text-red-400" : "text-gray-400 dark:text-gray-500"}
             >
               ▼
             </button>
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               {comment.user.username ? (
-                <Link href={`/profile/${comment.user.username}`} className="font-medium text-gray-700 hover:underline">
+                <Link href={`/profile/${comment.user.username}`} className="font-medium text-gray-700 dark:text-gray-300 hover:underline">
                   @{comment.user.username}
                 </Link>
               ) : (
-                <span className="font-medium text-gray-700">anonymous</span>
+                <span className="font-medium text-gray-700 dark:text-gray-300">anonymous</span>
               )}
               <span>{relativeTime(comment.createdAt)}</span>
             </div>
@@ -323,7 +344,7 @@ export default function CommentThread({
               <button
                 type="button"
                 onClick={() => setReplyOpenById((c) => ({ ...c, [comment.id]: !c[comment.id] }))}
-                className="text-xs text-gray-400 hover:text-gray-600"
+                className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 Reply
               </button>
@@ -371,10 +392,6 @@ export default function CommentThread({
     );
   }
 
-  const roots = sortList(
-    comments.filter((c) => !c.replyToId || !commentsById.has(c.replyToId)),
-  );
-
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
@@ -385,7 +402,7 @@ export default function CommentThread({
               key={mode}
               type="button"
               onClick={() => setSortMode(mode)}
-              className={`border px-2 py-0.5 ${sortMode === mode ? "border-gray-800 font-medium" : "border-gray-200"}`}
+              className={`rounded-full px-2 py-0.5 ${sortMode === mode ? "border border-gray-800 dark:border-gray-200 font-medium" : "border border-gray-200 dark:border-gray-700"}`}
             >
               {mode === "newest" ? "New" : mode === "top" ? "Top" : "Old"}
             </button>
@@ -399,13 +416,13 @@ export default function CommentThread({
         onSubmitComment={createComment}
       />
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       <div className="space-y-2">
-        {isLoading && <p className="text-sm text-gray-500">Loading comments...</p>}
+        {isLoading && <p className="text-sm text-gray-500 dark:text-gray-400">Loading comments...</p>}
         {roots.map((c) => renderNode(c, 0))}
         {!isLoading && comments.length === 0 && (
-          <p className="text-sm text-gray-500">No comments yet.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No comments yet.</p>
         )}
       </div>
     </section>

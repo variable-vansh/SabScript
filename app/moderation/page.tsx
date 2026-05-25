@@ -19,7 +19,7 @@ export default async function ModerationPage() {
 
   if (!user || !canAccessModeration(user.role)) {
     return (
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-gray-500 dark:text-gray-400">
         You do not have permission to view this page.
       </p>
     );

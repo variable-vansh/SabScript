@@ -48,19 +48,19 @@ type LogsResponse = {
 // ── Helpers ─────────────────────────────────────────────────────────
 
 function urgencyColor(count: number) {
-  if (count >= 5) return "bg-red-100 text-red-800 border-red-300";
-  if (count >= 3) return "bg-orange-100 text-orange-800 border-orange-300";
-  return "bg-yellow-50 text-yellow-800 border-yellow-200";
+  if (count >= 5) return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-300 dark:border-red-800";
+  if (count >= 3) return "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-800";
+  return "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800";
 }
 
 function targetBadge(type: string) {
   const colors: Record<string, string> = {
-    submission: "bg-blue-50 text-blue-700",
-    comment: "bg-green-50 text-green-700",
-    premise: "bg-purple-50 text-purple-700",
-    profile: "bg-gray-100 text-gray-700",
+    submission: "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
+    comment: "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+    premise: "bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300",
+    profile: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
   };
-  return colors[type] ?? "bg-gray-100 text-gray-700";
+  return colors[type] ?? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300";
 }
 
 function getActionForType(type: string): "remove_submission" | "remove_comment" | "remove_seed" | "set_user_role" {
@@ -89,14 +89,14 @@ export default function ModerationDashboard() {
       <h1 className="text-xl font-bold">Moderation</h1>
 
       {/* Tab switcher */}
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-2 border-b border-gray-200 dark:border-gray-800">
         <button
           type="button"
           onClick={() => setTab("reports")}
           className={`px-3 py-1.5 text-sm font-medium ${
             tab === "reports"
-              ? "border-b-2 border-gray-800 text-gray-900"
-              : "text-gray-500 hover:text-gray-700"
+              ? "border-b-2 border-gray-800 dark:border-gray-200 text-gray-900 dark:text-gray-100"
+              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
           }`}
         >
           Reports Queue
@@ -106,8 +106,8 @@ export default function ModerationDashboard() {
           onClick={() => setTab("log")}
           className={`px-3 py-1.5 text-sm font-medium ${
             tab === "log"
-              ? "border-b-2 border-gray-800 text-gray-900"
-              : "text-gray-500 hover:text-gray-700"
+              ? "border-b-2 border-gray-800 dark:border-gray-200 text-gray-900 dark:text-gray-100"
+              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
           }`}
         >
           Moderation Log
@@ -143,9 +143,9 @@ function ReportsQueue() {
     }
   }
 
-  if (isLoading) return <p className="text-sm text-gray-500">Loading reports...</p>;
-  if (error) return <p className="text-sm text-red-600">Failed to load reports.</p>;
-  if (groups.length === 0) return <p className="text-sm text-gray-500">No pending reports. 🎉</p>;
+  if (isLoading) return <p className="text-sm text-gray-500 dark:text-gray-400">Loading reports...</p>;
+  if (error) return <p className="text-sm text-red-600 dark:text-red-400">Failed to load reports.</p>;
+  if (groups.length === 0) return <p className="text-sm text-gray-500 dark:text-gray-400">No pending reports. 🎉</p>;
 
   return (
     <div className="space-y-3">
@@ -190,7 +190,7 @@ function ReportsQueue() {
                       )}
                     </p>
                   ) : (
-                    <p className="text-sm text-gray-700 line-clamp-2">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
                       {(preview.title as string) ?? (preview.content as string) ?? "Content unavailable"}
                     </p>
                   )}
@@ -201,7 +201,7 @@ function ReportsQueue() {
                   {uniqueReasons.map((reason) => (
                     <span
                       key={reason}
-                      className="inline-block border border-gray-300 bg-white px-1.5 py-0.5 text-[10px] text-gray-600"
+                      className="inline-block border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-1.5 py-0.5 text-[10px] text-gray-600 dark:text-gray-400 rounded"
                     >
                       {REPORT_REASON_LABELS[reason as ReportReason] ?? reason}
                     </span>
@@ -270,18 +270,18 @@ function ModerationLog() {
 
   const logs = data?.logs ?? [];
 
-  if (isLoading) return <p className="text-sm text-gray-500">Loading...</p>;
-  if (error) return <p className="text-sm text-red-600">Failed to load moderation logs.</p>;
+  if (isLoading) return <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>;
+  if (error) return <p className="text-sm text-red-600 dark:text-red-400">Failed to load moderation logs.</p>;
 
   if (logs.length === 0) {
-    return <p className="text-sm text-gray-500">No moderation actions yet.</p>;
+    return <p className="text-sm text-gray-500 dark:text-gray-400">No moderation actions yet.</p>;
   }
 
   return (
-    <div className="overflow-x-auto border border-gray-200">
+    <div className="overflow-x-auto border border-gray-200 dark:border-gray-800 rounded-lg">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+          <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 text-xs uppercase text-gray-500 dark:text-gray-400">
             <th className="px-4 py-2">Action</th>
             <th className="px-4 py-2">Target</th>
             <th className="px-4 py-2">Reason</th>
@@ -289,7 +289,7 @@ function ModerationLog() {
             <th className="px-4 py-2">Date</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200">
+        <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
           {logs.map((entry) => (
             <tr key={entry.id}>
               <td className="px-4 py-2 text-xs">{entry.action}</td>

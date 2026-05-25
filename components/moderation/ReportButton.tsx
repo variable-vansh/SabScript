@@ -18,6 +18,7 @@ export default function ReportButton({ targetType, targetId }: ReportButtonProps
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const popoverRef = useRef<HTMLDivElement>(null);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Close popover on outside click
   useEffect(() => {
@@ -30,6 +31,15 @@ export default function ReportButton({ targetType, targetId }: ReportButtonProps
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
+      }
+    };
+  }, []);
 
   // Don't render for logged-out users
   if (!userId) return null;
@@ -51,7 +61,8 @@ export default function ReportButton({ targetType, targetId }: ReportButtonProps
 
       if (res.ok) {
         setStatus("success");
-        setTimeout(() => {
+        if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = setTimeout(() => {
           setOpen(false);
           setStatus("idle");
           setSelected(null);
@@ -81,18 +92,18 @@ export default function ReportButton({ targetType, targetId }: ReportButtonProps
       {open && (
         <div
           ref={popoverRef}
-          className="absolute right-0 top-full z-50 mt-1 w-56 border border-gray-200 bg-white shadow-lg"
+          className="absolute right-0 top-full z-50 mt-1 w-56 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg overflow-hidden"
         >
-          <div className="border-b border-gray-100 px-3 py-2">
-            <p className="text-xs font-semibold text-gray-700">Report — select reason</p>
+          <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-2">
+            <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">Report — select reason</p>
           </div>
 
           <div className="max-h-48 overflow-y-auto p-1">
             {REPORT_REASONS.map((reason) => (
               <label
                 key={reason}
-                className={`flex cursor-pointer items-center gap-2 px-3 py-1.5 text-xs hover:bg-gray-50 ${
-                  selected === reason ? "bg-red-50 text-red-700" : "text-gray-600"
+                className={`flex cursor-pointer items-center gap-2 rounded px-3 py-1.5 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                  selected === reason ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400" : "text-gray-600 dark:text-gray-400"
                 }`}
               >
                 <input
@@ -108,12 +119,12 @@ export default function ReportButton({ targetType, targetId }: ReportButtonProps
             ))}
           </div>
 
-          <div className="border-t border-gray-100 px-3 py-2 flex items-center gap-2">
+          <div className="border-t border-gray-100 dark:border-gray-700 px-3 py-2 flex items-center gap-2">
             <button
               type="button"
               onClick={() => void handleSubmit()}
               disabled={!selected || loading}
-              className="border border-red-300 bg-red-50 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
+              className="border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 px-3 py-1 text-xs font-medium text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 disabled:opacity-50 rounded"
             >
               {loading ? "…" : "Submit"}
             </button>
@@ -125,10 +136,10 @@ export default function ReportButton({ targetType, targetId }: ReportButtonProps
               Cancel
             </button>
             {status === "success" && (
-              <span className="text-xs text-green-600">Reported ✓</span>
+              <span className="text-xs text-green-600 dark:text-green-400">Reported ✓</span>
             )}
             {status === "error" && (
-              <span className="text-xs text-red-500">Failed</span>
+              <span className="text-xs text-red-500 dark:text-red-400">Failed</span>
             )}
           </div>
         </div>

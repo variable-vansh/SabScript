@@ -2,9 +2,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import StarToggleButton from "@/components/actions/StarToggleButton";
-import CommentThread from "@/components/comments/CommentThread";
 import PremiseVotePanel from "@/components/premises/PremiseVotePanel";
 import ReportButton from "@/components/moderation/ReportButton";
+import FridayCountdown from "@/components/premises/FridayCountdown";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -22,12 +22,6 @@ const getSeedData = unstable_cache(
     });
     if (!premise) return null;
 
-    const comments = await prisma.comment.findMany({
-      where: { parentType: "premise", parentId: id },
-      orderBy: { createdAt: "desc" },
-      include: { user: { select: { username: true } } },
-    });
-
     return {
       premise: {
         id: premise.id,
@@ -39,20 +33,6 @@ const getSeedData = unstable_cache(
         netScore: premise.netScore,
         username: premise.user.username,
       },
-      comments: comments.map((c) => ({
-        id: c.id,
-        parentType: c.parentType as "submission" | "premise",
-        parentId: c.parentId,
-        userId: c.userId,
-        content: c.content,
-        createdAt: c.createdAt.toISOString(),
-        replyToId: c.replyToId,
-        upvotes: c.upvotes,
-        downvotes: c.downvotes,
-        netScore: c.netScore,
-        currentUserVote: null as 1 | -1 | null,
-        user: { username: c.user.username },
-      })),
     };
   },
   ["seed-detail"],
@@ -74,39 +54,24 @@ export default async function SeedDetailPage({ params }: SeedDetailPageProps) {
       })
     : null;
 
-  const [premiseStar, commentStars] = userId
-    ? await Promise.all([
-        prisma.star.findUnique({
-          where: {
-            userId_targetType_targetId: {
-              userId,
-              targetType: "premise",
-              targetId: premise.id,
-            },
+  const premiseStar = userId
+    ? await prisma.star.findUnique({
+        where: {
+          userId_targetType_targetId: {
+            userId,
+            targetType: "premise",
+            targetId: premise.id,
           },
-          select: { id: true },
-        }),
-        data.comments.length > 0
-          ? prisma.star.findMany({
-              where: {
-                userId,
-                targetType: "comment",
-                targetId: { in: data.comments.map((comment) => comment.id) },
-              },
-              select: { targetId: true },
-            })
-          : Promise.resolve([]),
-      ])
-    : [null, [] as Array<{ targetId: string }>];
-
-  const starredCommentIds = new Set(commentStars.map((star) => star.targetId));
-  const comments = data.comments.map((comment) => ({
-    ...comment,
-    starredByMe: starredCommentIds.has(comment.id),
-  }));
+        },
+        select: { id: true },
+      })
+    : null;
 
   return (
     <div className="space-y-6">
+      {/* Friday promotion info */}
+      <FridayCountdown />
+
       <article className="space-y-4">
         <div className="flex items-start gap-4">
           <PremiseVotePanel
@@ -125,12 +90,12 @@ export default async function SeedDetailPage({ params }: SeedDetailPageProps) {
                   targetType="premise"
                   targetId={premise.id}
                   initiallyStarred={Boolean(premiseStar)}
-                  className="border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
+                  className="rounded-lg border border-gray-300 dark:border-gray-700 px-2 py-1 text-xs hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 />
               </div>
             </div>
             <p className="whitespace-pre-line leading-7">{premise.content}</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {premise.username ? (
                 <Link href={`/profile/${premise.username}`} className="hover:underline">
                   @{premise.username}
@@ -143,12 +108,6 @@ export default async function SeedDetailPage({ params }: SeedDetailPageProps) {
           </div>
         </div>
       </article>
-
-      <CommentThread
-        parentType="premise"
-        parentId={premise.id}
-        initialComments={comments}
-      />
     </div>
   );
 }

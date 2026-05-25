@@ -139,7 +139,7 @@ export default async function CommunityPage({ params }: CommunityPageProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">{data.story.title} — Community</h1>
-        <a href={`/stories/${data.story.id}`} className="text-sm text-gray-500 hover:underline">
+        <a href={`/stories/${data.story.id}`} className="text-sm text-gray-500 dark:text-gray-400 hover:underline">
           ← Back to story
         </a>
       </div>

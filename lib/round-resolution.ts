@@ -18,6 +18,10 @@ export type RoundResolutionSummary = {
   storiesEnded: number;
 };
 
+type ResolveExpiredRoundsOptions = {
+  storyId?: string;
+};
+
 function addDuration(date: Date, milliseconds: number) {
   return new Date(date.getTime() + milliseconds);
 }
@@ -166,9 +170,11 @@ async function resolveRound(roundId: string, now: Date): Promise<ResolutionResul
 
 export async function resolveExpiredRounds(
   now = new Date(),
+  options: ResolveExpiredRoundsOptions = {},
 ): Promise<RoundResolutionSummary> {
   const expiredRounds = await prisma.round.findMany({
     where: {
+      ...(options.storyId ? { storyId: options.storyId } : {}),
       status: { in: ["open", "overtime"] },
       endsAt: { lte: now },
     },

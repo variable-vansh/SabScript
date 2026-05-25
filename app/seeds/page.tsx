@@ -44,10 +44,10 @@ export default async function SeedsPage() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">Seeds</h1>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500">{total} active</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">{total} active</span>
           <Link
             href="/seeds?compose=1"
-            className="border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50"
+            className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             Submit a seed
           </Link>

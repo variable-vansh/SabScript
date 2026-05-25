@@ -98,22 +98,22 @@ export default function ModerationActionButton({
               setError(null);
             }}
           />
-          <div className="relative w-full max-w-md border border-gray-200 bg-white p-4 shadow-xl">
-            <p className="text-sm font-semibold text-gray-800">
+          <div className="relative w-full max-w-md rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-xl">
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
               Confirm moderation action
             </p>
             <p className="mt-1 text-xs text-gray-500">
               {action.replace(/_/g, " ")} for target {targetId.slice(0, 8)}...
             </p>
 
-            <label className="mt-3 block text-xs font-medium text-gray-700">
+            <label className="mt-3 block text-xs font-medium text-gray-700 dark:text-gray-300">
               Reason
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Add internal reason for audit trail (optional)"
                 rows={3}
-                className="mt-1 w-full resize-y border border-gray-300 px-2 py-1.5 text-xs"
+                className="mt-1 w-full resize-y rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-1.5 text-xs"
               />
             </label>
 
@@ -122,7 +122,7 @@ export default function ModerationActionButton({
                 type="button"
                 onClick={() => void handleAction()}
                 disabled={loading}
-                className="border border-red-400 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
+                className="rounded-lg border border-red-400 dark:border-red-700 bg-red-50 dark:bg-red-900/20 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 disabled:opacity-50"
               >
                 {loading ? "Applying..." : "Confirm"}
               </button>
@@ -139,7 +139,7 @@ export default function ModerationActionButton({
               </button>
             </div>
 
-            {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+            {error && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{error}</p>}
           </div>
         </div>
       )}

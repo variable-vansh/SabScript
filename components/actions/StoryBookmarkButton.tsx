@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { signIn, useSession } from "next-auth/react";
+import { Bookmark, BookmarkCheck } from "lucide-react";
 
 type StoryBookmarkButtonProps = {
   storyId: string;
@@ -48,9 +49,14 @@ export default function StoryBookmarkButton({
       type="button"
       onClick={() => void onToggle()}
       disabled={saving}
-      className="inline-block border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+      className={`rounded-lg p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+        bookmarked
+          ? "text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20"
+          : "text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+      }`}
+      title={bookmarked ? "Bookmarked" : "Bookmark"}
     >
-      {bookmarked ? "Bookmarked" : "Bookmark"}
+      {bookmarked ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
     </button>
   );
 }

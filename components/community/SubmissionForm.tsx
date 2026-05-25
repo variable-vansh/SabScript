@@ -33,15 +33,15 @@ export default function SubmissionForm({
   const isValid = wordCount >= 100 && wordCount <= 200;
 
   if (!isAuthenticated) {
-    return <p className="text-sm text-gray-500">Sign in to submit a continuation.</p>;
+    return <p className="text-sm text-gray-500 dark:text-gray-400">Sign in to submit a continuation.</p>;
   }
 
   if (userHasSubmitted) {
-    return <p className="text-sm text-gray-500">You already submitted for this round.</p>;
+    return <p className="text-sm text-gray-500 dark:text-gray-400">You already submitted for this round.</p>;
   }
 
   if (!canSubmit || !roundId) {
-    return <p className="text-sm text-gray-500">Submissions are not open for this round.</p>;
+    return <p className="text-sm text-gray-500 dark:text-gray-400">Submissions are not open for this round.</p>;
   }
 
   async function handleSubmit() {
@@ -79,21 +79,21 @@ export default function SubmissionForm({
   }
 
   return (
-    <div className="space-y-3 border border-gray-200 p-4">
-      <h3 className="text-sm font-medium">Submit a continuation (100–200 words)</h3>
+    <div className="space-y-3 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+      <h3 className="text-sm font-medium">Write the next segment…</h3>
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        className="w-full border border-gray-300 p-3 text-sm leading-6"
-        rows={6}
-        placeholder="Write your continuation..."
+        className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-sm leading-6 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-600"
+        rows={5}
+        placeholder="100–200 words"
       />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <span className={`text-xs ${isValid ? "text-green-600" : "text-gray-500"}`}>
+          <span className={`text-xs ${isValid ? "text-green-600 dark:text-green-400" : "text-gray-500 dark:text-gray-400"}`}>
             {wordCount} / 100–200 words
           </span>
-          <label className="flex items-center gap-1.5 text-xs">
+          <label className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
             <input
               type="checkbox"
               checked={endsStory}
@@ -106,12 +106,13 @@ export default function SubmissionForm({
           type="button"
           onClick={() => void handleSubmit()}
           disabled={!isValid || submitting}
-          className="border border-gray-300 px-4 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
+          className="rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
         >
-          {submitting ? "Submitting..." : "Submit"}
+          {submitting ? "Submitting…" : "Submit"}
         </button>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      <p className="text-xs text-gray-400 dark:text-gray-500">2 submissions allowed per voting cycle</p>
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
     </div>
   );
 }

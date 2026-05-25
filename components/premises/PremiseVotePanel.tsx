@@ -90,7 +90,7 @@ export default function PremiseVotePanel({
         type="button"
         disabled={!canVote || voting}
         onClick={() => void handleVote(1)}
-        className={`px-1 ${currentVote === 1 ? "font-bold text-green-600" : "text-gray-400 hover:text-gray-600"}`}
+        className={`px-1 ${currentVote === 1 ? "font-bold text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}
       >
         ▲
       </button>
@@ -99,7 +99,7 @@ export default function PremiseVotePanel({
         type="button"
         disabled={!canVote || voting}
         onClick={() => void handleVote(-1)}
-        className={`px-1 ${currentVote === -1 ? "font-bold text-red-600" : "text-gray-400 hover:text-gray-600"}`}
+        className={`px-1 ${currentVote === -1 ? "font-bold text-red-600 dark:text-red-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}
       >
         ▼
       </button>

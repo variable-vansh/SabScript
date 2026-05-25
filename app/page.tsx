@@ -69,29 +69,29 @@ export default async function HomePage() {
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Bookmarked stories</h2>
-            <Link href="/profile" className="text-sm text-gray-500 hover:underline">
+            <Link href="/profile" className="text-sm text-gray-500 dark:text-gray-400 hover:underline">
               View profile →
             </Link>
           </div>
           {bookmarkedStories.length === 0 ? (
-            <p className="text-sm text-gray-500">No bookmarks yet. Open a story and click Bookmark.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">No bookmarks yet. Open a story and click Bookmark.</p>
           ) : (
-            <ul className="divide-y divide-gray-200 border border-gray-200">
+            <ul className="divide-y divide-gray-200 dark:divide-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
               {bookmarkedStories.map(({ story }) => (
                 <li key={story.id}>
                   <Link
                     href={`/stories/${story.id}`}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
                     <div>
                       <span className="font-medium">{story.title}</span>
-                      <span className="ml-2 text-xs text-gray-500">
+                      <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
                         {story.wordCount} words · {story.submissionCount} submissions
                       </span>
                     </div>
                     <span
                       className={`text-xs font-medium uppercase ${
-                        story.status === "active" ? "text-green-600" : "text-gray-400"
+                        story.status === "active" ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"
                       }`}
                     >
                       {story.status}
@@ -107,29 +107,29 @@ export default async function HomePage() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Stories</h2>
-          <Link href="/stories" className="text-sm text-gray-500 hover:underline">
+          <Link href="/stories" className="text-sm text-gray-500 dark:text-gray-400 hover:underline">
             View all →
           </Link>
         </div>
         {stories.length === 0 ? (
-          <p className="text-sm text-gray-500">No stories yet.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No stories yet.</p>
         ) : (
-          <ul className="divide-y divide-gray-200 border border-gray-200">
+          <ul className="divide-y divide-gray-200 dark:divide-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
             {stories.map((story) => (
               <li key={story.id}>
                 <Link
                   href={`/stories/${story.id}`}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                 >
                   <div>
                     <span className="font-medium">{story.title}</span>
-                    <span className="ml-2 text-xs text-gray-500">
+                    <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
                       {story.wordCount} words · {story.submissionCount} submissions
                     </span>
                   </div>
                   <span
                     className={`text-xs font-medium uppercase ${
-                      story.status === "active" ? "text-green-600" : "text-gray-400"
+                      story.status === "active" ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"
                     }`}
                   >
                     {story.status}
@@ -144,22 +144,22 @@ export default async function HomePage() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Seeds</h2>
-          <Link href="/seeds" className="text-sm text-gray-500 hover:underline">
+          <Link href="/seeds" className="text-sm text-gray-500 dark:text-gray-400 hover:underline">
             View all →
           </Link>
         </div>
         {premises.length === 0 ? (
-          <p className="text-sm text-gray-500">No active seeds.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No active seeds.</p>
         ) : (
-          <ul className="divide-y divide-gray-200 border border-gray-200">
+          <ul className="divide-y divide-gray-200 dark:divide-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
             {premises.map((premise) => (
               <li key={premise.id}>
                 <Link
                   href={`/seeds/${premise.id}`}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                 >
                   <span className="font-medium">{premise.title}</span>
-                  <span className="text-sm text-gray-500">{premise.netScore} votes</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">{premise.netScore} votes</span>
                 </Link>
               </li>
             ))}

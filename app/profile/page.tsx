@@ -13,7 +13,7 @@ export default async function ProfilePage() {
 
   if (!session?.user?.id) {
     return (
-      <p className="text-sm text-gray-500">Sign in to view your profile.</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">Sign in to view your profile.</p>
     );
   }
 
@@ -149,20 +149,20 @@ export default async function ProfilePage() {
     <div className="space-y-6">
       <header>
         <h1 className="text-xl font-bold">@{user.username ?? "writer"}</h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Joined {new Date(user.createdAt).toLocaleDateString()}
         </p>
       </header>
 
       {/* Bookmarks */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500">
+        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">
           Bookmarks ({user.bookmarks.length})
         </h2>
         {user.bookmarks.length === 0 ? (
-          <p className="text-sm text-gray-400">No bookmarked stories yet.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">No bookmarked stories yet.</p>
         ) : (
-          <ul className="divide-y divide-gray-200 border border-gray-200">
+          <ul className="divide-y divide-gray-200 dark:divide-gray-800 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
             {user.bookmarks.map((bookmark) => (
               <li key={bookmark.story.id} className="px-4 py-3">
                 <Link
@@ -171,7 +171,7 @@ export default async function ProfilePage() {
                 >
                   {bookmark.story.title}
                 </Link>
-                <div className="mt-1 text-xs text-gray-400">
+                <div className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                   {bookmark.story.wordCount} words · {bookmark.story.submissionCount} submissions · {bookmark.story.status}
                 </div>
               </li>
@@ -182,11 +182,11 @@ export default async function ProfilePage() {
 
       {/* Submissions */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500">
+        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">
           Submissions ({user.submissions.length})
         </h2>
         {user.submissions.length === 0 ? (
-          <p className="text-sm text-gray-400">No submissions yet.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">No submissions yet.</p>
         ) : (
           <ul className="divide-y divide-gray-200 border border-gray-200">
             {user.submissions.map((sub) => (
@@ -197,7 +197,7 @@ export default async function ProfilePage() {
                 >
                   {sub.round.story.title}
                 </Link>
-                <p className="mt-1 text-sm text-gray-600">{snippet(sub.content)}</p>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{snippet(sub.content)}</p>
                 <div className="mt-1 text-xs text-gray-400">
                   {sub.netScore} votes ·{" "}
                   {sub.round.winningSubmissionId === sub.id ? "Won" : "Lost"}
@@ -210,11 +210,11 @@ export default async function ProfilePage() {
 
       {/* Seeds */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500">
+        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">
           Seeds ({user.premises.length})
         </h2>
         {user.premises.length === 0 ? (
-          <p className="text-sm text-gray-400">No seeds yet.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">No seeds yet.</p>
         ) : (
           <ul className="divide-y divide-gray-200 border border-gray-200">
             {user.premises.map((seed) => (
@@ -236,11 +236,11 @@ export default async function ProfilePage() {
 
       {/* Starred Seeds */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500">
+        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">
           Starred Seeds ({starredPremises.length})
         </h2>
         {starredPremises.length === 0 ? (
-          <p className="text-sm text-gray-400">No starred seeds yet.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">No starred seeds yet.</p>
         ) : (
           <ul className="divide-y divide-gray-200 border border-gray-200">
             {starredPremises.map((seed) => (
@@ -259,16 +259,16 @@ export default async function ProfilePage() {
 
       {/* Comments */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500">
+        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">
           Comments ({user.comments.length})
         </h2>
         {user.comments.length === 0 ? (
-          <p className="text-sm text-gray-400">No comments yet.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">No comments yet.</p>
         ) : (
           <ul className="divide-y divide-gray-200 border border-gray-200">
             {user.comments.map((comment) => (
               <li key={comment.id} className="px-4 py-3">
-                <p className="text-sm text-gray-600">{snippet(comment.content)}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{snippet(comment.content)}</p>
                 <div className="mt-1 text-xs text-gray-400">
                   on {comment.parentType} ·{" "}
                   {new Date(comment.createdAt).toLocaleDateString()}
@@ -281,11 +281,11 @@ export default async function ProfilePage() {
 
       {/* Starred Comments */}
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500">
+        <h2 className="mb-2 text-sm font-semibold uppercase text-gray-500 dark:text-gray-400">
           Starred Comments ({starredComments.length})
         </h2>
         {starredComments.length === 0 ? (
-          <p className="text-sm text-gray-400">No starred comments yet.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">No starred comments yet.</p>
         ) : (
           <ul className="divide-y divide-gray-200 border border-gray-200">
             {starredComments.map((comment) => {
@@ -304,7 +304,7 @@ export default async function ProfilePage() {
 
               return (
                 <li key={comment.id} className="px-4 py-3">
-                  <p className="text-sm text-gray-600">{snippet(comment.content)}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{snippet(comment.content)}</p>
                   <div className="mt-1 text-xs text-gray-400">
                     {href ? (
                       <Link href={href} className="hover:underline">
