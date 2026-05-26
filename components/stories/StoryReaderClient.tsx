@@ -125,21 +125,29 @@ export default function StoryReaderClient({
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <h1 className="text-2xl font-bold">{story.title}</h1>
-                <div className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-gray-500 dark:text-gray-400">
-                  <span>{story.wordCount} words</span>
-                  <span>·</span>
-                  <span>{story.segments.length} segments</span>
-                  <span>·</span>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                      story.status === "active"
-                        ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                        : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-                    }`}
-                  >
-                    {story.status.toUpperCase()}
-                  </span>
-                </div>
+                {(() => {
+                  const premiseWords = story.premise ? story.premise.trim().split(/\s+/).filter(Boolean).length : 0;
+                  const segmentWords = story.segments.reduce((sum, s) => sum + s.content.trim().split(/\s+/).filter(Boolean).length, 0);
+                  const totalWords = story.wordCount > 0 ? story.wordCount : premiseWords + segmentWords;
+                  const sectionCount = (story.premise ? 1 : 0) + story.segments.length;
+                  return (
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-gray-500 dark:text-gray-400">
+                      <span>{totalWords} words</span>
+                      <span>·</span>
+                      <span>{sectionCount} {sectionCount === 1 ? "section" : "sections"}</span>
+                      <span>·</span>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                          story.status === "active"
+                            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                            : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                        }`}
+                      >
+                        {story.status.toUpperCase()}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Action buttons */}

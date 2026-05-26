@@ -22,6 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark")}}catch(e){}})();`,
           }}
         />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
       </head>
       <body className="bg-white dark:bg-[#0f0f0f] text-gray-900 dark:text-gray-100">
         <AuthSessionProvider>

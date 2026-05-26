@@ -63,20 +63,9 @@ export default function Header() {
               <button
                 type="button"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                {session.user.image ? (
-                  <img
-                    src={session.user.image}
-                    alt=""
-                    className="h-7 w-7 rounded-full"
-                  />
-                ) : (
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-semibold text-gray-600 dark:text-gray-300">
-                    {avatarLetter}
-                  </span>
-                )}
-                <span className="hidden sm:inline">@{username}</span>
+                <span className="text-sm">@{username}</span>
                 <ChevronDown size={14} className={`text-gray-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
               </button>
 

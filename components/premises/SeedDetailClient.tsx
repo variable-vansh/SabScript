@@ -78,15 +78,23 @@ export default function SeedDetailClient({ premise, initialUserVote, initiallySt
   return (
     <div className="rounded-lg border border-gray-200 dark:border-gray-800">
       <div className="flex items-start gap-3 p-4">
-        {/* Vote controls - same style as submission cards */}
+        {/* Vote controls — identical style to submission cards */}
         <div className="flex flex-col items-center gap-1 text-xs shrink-0">
-          <button type="button" disabled={!canVote || voting} onClick={() => void handleVote(1)}
-            className={`px-1 ${currentVote === 1 ? "font-bold text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}>
+          <button
+            type="button"
+            disabled={!canVote || voting}
+            onClick={() => void handleVote(1)}
+            className={`px-1 ${currentVote === 1 ? "font-bold text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}
+          >
             ▲
           </button>
           <span className="font-medium">{netScore}</span>
-          <button type="button" disabled={!canVote || voting} onClick={() => void handleVote(-1)}
-            className={`px-1 ${currentVote === -1 ? "font-bold text-red-600 dark:text-red-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}>
+          <button
+            type="button"
+            disabled={!canVote || voting}
+            onClick={() => void handleVote(-1)}
+            className={`px-1 ${currentVote === -1 ? "font-bold text-red-600 dark:text-red-400" : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"}`}
+          >
             ▼
           </button>
         </div>
@@ -109,15 +117,20 @@ export default function SeedDetailClient({ premise, initialUserVote, initiallySt
             {expanded ? premise.content : truncated}
           </p>
           {isTruncated && (
-            <button type="button" onClick={() => setExpanded(!expanded)}
-              className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline">
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+            >
               {expanded ? "Show less" : "Read more"}
             </button>
           )}
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
             {premise.username ? (
               <Link href={`/profile/${premise.username}`} className="hover:underline">@{premise.username}</Link>
-            ) : (<span>@anonymous</span>)}
+            ) : (
+              <span>@anonymous</span>
+            )}
             <span>{upvotes}↑ {downvotes}↓</span>
             <span>{premise.wordCount} words</span>
           </div>

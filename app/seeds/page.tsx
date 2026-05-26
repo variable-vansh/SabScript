@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { unstable_cache } from "next/cache";
-import SeedsList from "@/components/premises/SeedsList";
+import FridayCountdown from "@/components/premises/FridayCountdown";
+import SeedsPageClient from "@/components/premises/SeedsPageClient";
 import { prisma } from "@/lib/prisma";
 
 export const revalidate = 60;
@@ -11,7 +11,7 @@ const getSeedsData = unstable_cache(
       prisma.premise.findMany({
         where: { status: "voting" },
         orderBy: [{ netScore: "desc" }, { createdAt: "desc" }],
-        take: 20,
+        take: 50,
         include: { user: { select: { id: true, username: true } } },
       }),
       prisma.premise.count({ where: { status: "voting" } }),
@@ -21,7 +21,7 @@ const getSeedsData = unstable_cache(
       premises: premises.map((p) => ({
         id: p.id,
         title: p.title,
-        contentPreview: p.content.length > 120 ? p.content.slice(0, 120) + "..." : p.content,
+        content: p.content,
         wordCount: p.wordCount,
         createdAt: p.createdAt.toISOString(),
         upvotes: p.upvotes,
@@ -40,20 +40,9 @@ export default async function SeedsPage() {
   const { premises, total } = await getSeedsData();
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold">Seeds</h1>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500 dark:text-gray-400">{total} active</span>
-          <Link
-            href="/seeds?compose=1"
-            className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            Submit a seed
-          </Link>
-        </div>
-      </div>
-      <SeedsList premises={premises} />
+    <div className="space-y-4">
+      <FridayCountdown />
+      <SeedsPageClient premises={premises} total={total} />
     </div>
   );
 }

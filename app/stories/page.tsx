@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import StoriesTable from "@/components/stories/StoriesTable";
+import StoriesListClient from "@/components/stories/StoriesListClient";
 import { prisma } from "@/lib/prisma";
 
 export const revalidate = 60;
@@ -9,7 +9,7 @@ const getStoriesPageData = unstable_cache(
     const [stories, total] = await Promise.all([
       prisma.story.findMany({
         orderBy: [{ status: "asc" }, { createdAt: "desc" }],
-        take: 20,
+        take: 50,
         include: {
           rounds: {
             where: { status: { in: ["open", "overtime"] } },
@@ -52,9 +52,9 @@ export default async function StoriesPage() {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">Stories</h1>
-        <span className="text-sm text-gray-500">{total} total</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">{total} total</span>
       </div>
-      <StoriesTable stories={stories} />
+      <StoriesListClient stories={stories} />
     </div>
   );
 }

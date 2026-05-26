@@ -18,7 +18,8 @@ type SubmissionsTableProps = {
   loading: boolean;
 };
 
-type SortMode = "top" | "new" | "rising";
+type BaseSort = "top" | "new" | "rising";
+type TopTimeFilter = "1h" | "3h" | "6h" | "12h" | "24h" | "all";
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -45,7 +46,8 @@ export default function SubmissionsTable({
 }: SubmissionsTableProps) {
   const [votingIds, setVotingIds] = useState<Set<string>>(new Set());
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [sortMode, setSortMode] = useState<SortMode>("top");
+  const [baseSort, setBaseSort] = useState<BaseSort>("top");
+  const [topTimeFilter, setTopTimeFilter] = useState<TopTimeFilter>("24h");
 
   function toggleExpand(id: string) {
     setExpandedIds((prev) => {
@@ -57,25 +59,27 @@ export default function SubmissionsTable({
   }
 
   const sortedSubmissions = useMemo(() => {
-    const copy = [...submissions];
-    switch (sortMode) {
-      case "top":
-        return copy.sort((a, b) => b.netScore - a.netScore);
-      case "new":
-        return copy.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      case "rising": {
-        // Rising = highest score relative to recency
-        const now = Date.now();
-        return copy.sort((a, b) => {
-          const ageA = Math.max(1, (now - new Date(a.createdAt).getTime()) / 3600000);
-          const ageB = Math.max(1, (now - new Date(b.createdAt).getTime()) / 3600000);
-          return (b.netScore / ageB) - (a.netScore / ageA);
-        });
+    let copy = [...submissions];
+
+    if (baseSort === "top") {
+      if (topTimeFilter !== "all") {
+        const hours = parseInt(topTimeFilter);
+        const cutoff = Date.now() - hours * 3600000;
+        copy = copy.filter((s) => new Date(s.createdAt).getTime() >= cutoff);
       }
-      default:
-        return copy;
+      return copy.sort((a, b) => b.netScore - a.netScore);
     }
-  }, [submissions, sortMode]);
+    if (baseSort === "new") {
+      return copy.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+    // rising
+    const now = Date.now();
+    return copy.sort((a, b) => {
+      const ageA = Math.max(1, (now - new Date(a.createdAt).getTime()) / 3600000);
+      const ageB = Math.max(1, (now - new Date(b.createdAt).getTime()) / 3600000);
+      return b.netScore / ageB - a.netScore / ageA;
+    });
+  }, [submissions, baseSort, topTimeFilter]);
 
   async function handleVote(submissionId: string, value: 1 | -1) {
     if (votingIds.has(submissionId)) return;
@@ -84,11 +88,9 @@ export default function SubmissionsTable({
       return;
     }
 
-    // Snapshot for rollback
     const snapshot = [...submissions];
     setVotingIds((s) => new Set(s).add(submissionId));
 
-    // Optimistic update
     void safeMutate(
       (current) =>
         current.map((s) => {
@@ -123,7 +125,6 @@ export default function SubmissionsTable({
       if (!res.ok) throw new Error("Vote failed");
       const payload = await res.json();
 
-      // Reconcile with server
       void safeMutate(
         (current) =>
           current.map((s) =>
@@ -140,7 +141,6 @@ export default function SubmissionsTable({
         { revalidate: false },
       );
     } catch {
-      // Rollback
       void safeMutate(snapshot, { revalidate: true });
     } finally {
       setVotingIds((s) => {
@@ -154,30 +154,44 @@ export default function SubmissionsTable({
   if (loading) return <p className="text-sm text-gray-500 dark:text-gray-400">Loading submissions...</p>;
   if (submissions.length === 0) return <p className="text-sm text-gray-500 dark:text-gray-400">No submissions yet.</p>;
 
-  const sortOptions: { key: SortMode; label: string }[] = [
-    { key: "top", label: "Top" },
-    { key: "new", label: "New" },
-    { key: "rising", label: "Rising" },
-  ];
-
   return (
     <div className="space-y-3">
-      {/* Sort toggle */}
-      <div className="flex items-center gap-1">
-        {sortOptions.map(({ key, label }) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setSortMode(key)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              sortMode === key
-                ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900"
-                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+      {/* Sort toggle — two-level UI */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-1">
+          {(["top", "new", "rising"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setBaseSort(mode)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                baseSort === mode
+                  ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900"
+                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
+            >
+              {mode.charAt(0).toUpperCase() + mode.slice(1)}
+            </button>
+          ))}
+        </div>
+        {baseSort === "top" && (
+          <div className="flex items-center gap-1">
+            {(["1h", "3h", "6h", "12h", "24h", "all"] as const).map((tf) => (
+              <button
+                key={tf}
+                type="button"
+                onClick={() => setTopTimeFilter(tf)}
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                  topTimeFilter === tf
+                    ? "bg-gray-700 dark:bg-gray-300 text-white dark:text-gray-900"
+                    : "text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
+              >
+                {tf === "all" ? "All time" : tf}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Submission cards */}
@@ -243,6 +257,10 @@ export default function SubmissionsTable({
           </div>
         );
       })}
+
+      {sortedSubmissions.length === 0 && submissions.length > 0 && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">No submissions in this time window.</p>
+      )}
     </div>
   );
 }
